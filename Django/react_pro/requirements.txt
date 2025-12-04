@@ -8,5 +8,6 @@ environ==1.0
 gunicorn==23.0.0
 mysqlclient==2.2.7
 packaging==25.0
+pydotenv==0.0.7
 PyJWT==2.10.1
 sqlparse==0.5.4
