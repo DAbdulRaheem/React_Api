@@ -10,4 +10,5 @@ mysqlclient==2.2.7
 packaging==25.0
 pydotenv==0.0.7
 PyJWT==2.10.1
+python-dotenv==1.2.1
 sqlparse==0.5.4
