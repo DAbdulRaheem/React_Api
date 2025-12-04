@@ -153,4 +153,3 @@ DATABASES = {
     }
 }
 
-DEBUG = env.bool("DEBUG", default=False)
