@@ -14,6 +14,16 @@ from pathlib import Path
 import os
 import environ
 from datetime import timedelta
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+
+# Load .env for local dev
+if os.path.exists(".env"):
+    environ.Env.read_env(".env")
+
+SECRET_KEY = env("SECRET_KEY")
+DEBUG = env("DEBUG", default=False)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # Initialize environment
