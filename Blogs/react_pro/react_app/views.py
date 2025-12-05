@@ -22,7 +22,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 # JWT HELPERS
 # -------------------------------------------------
 def generate_token(user):
-    payload = {
+    payload = { 
         "user_id": user.id,
         "email": user.email,
         "role": user.role,
