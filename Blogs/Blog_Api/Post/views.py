@@ -17,7 +17,8 @@ class PublicPostListView(generics.ListAPIView):
     permission_classes = [] # Publicly accessible
 
     def get_queryset(self):
-        return Post.objects.filter(status='APPROVED')
+        # return Post.objects.filter(status='APPROVED')
+        return Post.objects.all()
 
 class PublicPostDetailView(generics.RetrieveAPIView):
     """ GET /api/public/posts/{postId}/ - Fetch single APPROVED post. """
