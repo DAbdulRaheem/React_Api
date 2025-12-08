@@ -9,6 +9,12 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
+# Assuming you have an IsAdminUser permission class
+from User.permissions import IsAdminUser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 
@@ -22,8 +28,8 @@ def get_jwt_token(user):
         'user_id': user.id,
         'email': user.email,
         'role': user.role,
-        'exp': datetime.utcnow() + timedelta(seconds=settings.JWT_EXPIRATION_DELTA),
-        'iat': datetime.utcnow()
+        'exp': datetime.now() + timedelta(seconds=settings.JWT_EXPIRATION_DELTA),
+        'iat': datetime.now()
     }
     token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return token
@@ -65,8 +71,10 @@ def login_user(request):
         response_data = {
             "message": "Login successful",
             "token": token,
+            "role":user.role,
             "user": user_data
         }
+        # print(user.role)
         return Response(response_data)
     else:
         return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -100,3 +108,22 @@ class AdminUserRoleUpdateView(generics.UpdateAPIView):
             "userId": instance.id,
             "newRole": new_role
         }, status=status.HTTP_200_OK)
+        
+class UserCountView(APIView):
+    """ GET /api/admin/users/count/ - Returns the total user count. """
+    permission_classes = [IsAuthenticated, IsAdminUser] # Restrict to logged-in Admins
+
+    def get(self, request, format=None):
+        User = get_user_model()
+        # Count all users
+        user_count = User.objects.count() 
+        
+        return Response({
+            "total_users": user_count
+        }) 
+    
+class AdminUserListView(generics.ListAPIView):
+    """ GET /api/admin/users/ """
+    queryset = User.objects.all().order_by('id')
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
