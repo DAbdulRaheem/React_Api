@@ -139,9 +139,25 @@ STATIC_URL = 'static/'
 
 import datetime
 
-JWT_SECRET = "django-insecure-pep3+gz-#ga8row6kvy)cjxx_(7$-ein7#a=!um)e-^$gjn#g9" 
+JWT_SECRET_KEY = 'django-insecure-pep3+gz-#ga8row6kvy)cjxx_(7$-ein7#a=!um)e-^$gjn#g9' 
 JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_DELTA = 60 * 60 * 24  # 24 hours
+
+ACCESS_TOKEN_LIFETIME = datetime.timedelta(minutes=15)
+REFRESH_TOKEN_LIFETIME = datetime.timedelta(days=7)
 
 # Token lifetimes
 ACCESS_TOKEN_LIFETIME = datetime.timedelta(minutes=15)
 REFRESH_TOKEN_LIFETIME = datetime.timedelta(days=7)
+
+AUTHENTICATION_BACKENDS = [
+    'User.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'User.backends.CustomJWTAuthentication',
+    ]
+}
+

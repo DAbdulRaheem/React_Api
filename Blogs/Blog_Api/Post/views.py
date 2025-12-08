@@ -38,20 +38,19 @@ class PublicPostDetailView(generics.RetrieveAPIView):
         return obj
 
 # --- AUTHOR APIs (Requires JWT) ---
-
 class AuthorPostListCreateView(generics.ListCreateAPIView):
-    """ POST /api/posts/ (Create) & GET /api/posts/my-posts/ (List) """
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated, IsAuthor]
 
     def get_queryset(self):
-        # Only return posts for the authenticated user
         return Post.objects.filter(author=self.request.user)
 
-    def perform_create(self, serializer):
-        # Set the author to the current authenticated user. Status is PENDING by default.
-        post = serializer.save(author=self.request.user)
-        # Manually construct the response as per documentation
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        post = serializer.save(author=request.user)
+
         response_data = {
             "message": "Post created and pending approval",
             "post": {
@@ -61,6 +60,7 @@ class AuthorPostListCreateView(generics.ListCreateAPIView):
             }
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
+
 
 class AuthorPostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     """ PUT /api/posts/{postId}/ (Edit own) & DELETE /api/posts/{postId}/ (Delete own) & GET /api/posts/{postId}/ (Fetch single) """
@@ -130,3 +130,5 @@ class AdminPostDeleteView(generics.DestroyAPIView):
     def perform_destroy(self, instance):
         instance.delete()
         return Response({"message": "Post deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+    
+

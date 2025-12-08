@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
