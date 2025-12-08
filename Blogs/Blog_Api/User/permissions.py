@@ -1,33 +1,22 @@
-# users/permissions.py
-from rest_framework import permissions
+from rest_framework.permissions import BasePermission
 
-class IsAdminUser(permissions.BasePermission):
-    """
-    Allows access only to Admin users.
-    """
+class IsAdminUser(BasePermission):
+    """Allow only users with role = ADMIN"""
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == 'ADMIN')
+        return request.user and request.user.role == "ADMIN"
 
-class IsAuthorOrAdmin(permissions.BasePermission):
-    """
-    Allows access to Admin users, or the Author of the post.
-    """
-    def has_object_permission(self, request, view, obj):
-        # Admins can do anything
-        if request.user.role == 'ADMIN':
-            return True
-        
-        # Authors can only modify their own objects (posts)
-        if request.method in permissions.SAFE_METHODS:
-            return True # Authors can view their own posts
-            
-        # For PUT/DELETE, check if the request user is the post author
-        return obj.author == request.user
 
-class IsAuthor(permissions.BasePermission):
-    """
-    Allows access only to Author users.
-    """
+class IsAuthor(BasePermission):
+    """Allow only users with role = AUTHOR"""
     def has_permission(self, request, view):
-        # Authors and Admins are allowed in Author APIs, but Admin has separate APIs
-        return bool(request.user and request.user.is_authenticated and (request.user.role == 'AUTHOR' or request.user.role == 'ADMIN'))
+        return request.user and request.user.role == "AUTHOR"
+
+
+class IsAuthorOrAdmin(BasePermission):
+    """Allow only AUTHOR or ADMIN"""
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and hasattr(request.user, 'role')
+            and request.user.role in ["AUTHOR", "ADMIN"]
+        )

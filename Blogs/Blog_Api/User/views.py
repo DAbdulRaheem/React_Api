@@ -34,6 +34,80 @@ def get_jwt_token(user):
     token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return token
 
+
+# ----------------------------
+# ADMIN LOGIN (JWT BASED)
+# ----------------------------
+@api_view(['POST'])
+@csrf_exempt
+def register_admin(request):
+    """ POST /api/auth/admin/register/ """
+
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    if not email or not password:
+        return Response(
+            {"detail": "email and password are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Check existing user
+    if User.objects.filter(email=email).exists():
+        return Response(
+            {"detail": "Admin with this email already exists"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Create admin user (NO username field)
+    admin_user = User.objects.create_user(
+        email=email,
+        password=password,
+        role="ADMIN"
+    )
+
+    user_data = UserSerializer(admin_user).data
+    if "created_at" in user_data:
+        del user_data["created_at"]
+
+    return Response({
+        "message": "Admin registered successfully",
+        "user": user_data
+    }, status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+@csrf_exempt
+def admin_login(request):
+    """ POST /api/auth/admin/login/ """
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    if not email or not password:
+        return Response({"detail": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = authenticate(email=email, password=password)
+
+    if user is None:
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # CHECK IF USER IS ADMIN
+    if user.role != "ADMIN":
+        return Response({"detail": "You are not authorized as an admin"}, status=status.HTTP_403_FORBIDDEN)
+
+    # Generate JWT Token
+    token = get_jwt_token(user)
+
+    user_data = UserSerializer(user).data
+    del user_data['created_at']   # remove unused field   
+
+    return Response({
+        "message": "Admin login successful",
+        "token": token,
+        "role": user.role,
+        "user": user_data
+    }, status=status.HTTP_200_OK)
+
+
 # --- Auth APIs (No JWT Required) ---
 
 @api_view(['POST'])
